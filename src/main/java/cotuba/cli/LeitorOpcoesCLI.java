@@ -17,6 +17,79 @@ class LeitorOpcoesCLI {
     private boolean modoVerboso = false;
 
     LeitorOpcoesCLI(String[] args) {
+        Options options = criaOpcoes();
+        CommandLine cmd = parseDosArgumentos(args, options);
+        trataDiretoriosDoMD(cmd);
+        trataFormato(cmd);
+        trataArquivoDeSaida(cmd);
+        trataModoVerboso(cmd);
+    }
+
+    private void trataModoVerboso(CommandLine cmd) {
+        modoVerboso = cmd.hasOption("verbose");
+    }
+
+    private void trataArquivoDeSaida(CommandLine cmd) {
+        try {
+            String nomeDoArquivoDeSaidaDoEbook = cmd.getOptionValue("output");
+            if (nomeDoArquivoDeSaidaDoEbook != null) {
+                arquivoDeSaida = Paths.get(nomeDoArquivoDeSaidaDoEbook);
+            } else {
+                arquivoDeSaida = Paths.get("book." + formato.toLowerCase());
+            }
+            if (Files.isDirectory(arquivoDeSaida)) {
+                // deleta arquivos do diretório recursivamente
+                Files.walk(arquivoDeSaida).sorted(Comparator.reverseOrder())
+                        .map(Path::toFile).forEach(File::delete);
+            } else {
+                Files.deleteIfExists(arquivoDeSaida);
+            }
+        } catch (IOException ex) {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+
+    private void trataFormato(CommandLine cmd) {
+        String nomeDoFormatoDoEbook = cmd.getOptionValue("format");
+
+        if (nomeDoFormatoDoEbook != null) {
+            formato = nomeDoFormatoDoEbook.toLowerCase();
+        } else {
+            formato = "pdf";
+        }
+    }
+
+    private void trataDiretoriosDoMD(CommandLine cmd) {
+        String nomeDoDiretorioDosMD = cmd.getOptionValue("dir");
+
+        if (nomeDoDiretorioDosMD != null) {
+            diretorioDosMD = Paths.get(nomeDoDiretorioDosMD);
+            if (!Files.isDirectory(diretorioDosMD)) {
+                throw new IllegalArgumentException(nomeDoDiretorioDosMD + " não é um diretório.");
+            }
+        } else {
+            Path diretorioAtual = Paths.get("");
+            diretorioDosMD = diretorioAtual;
+        }
+    }
+
+    private static CommandLine parseDosArgumentos(String[] args, Options options) {
+        CommandLineParser cmdParser = new DefaultParser();
+        var ajuda = new HelpFormatter();
+        CommandLine cmd;
+
+        try {
+            cmd = cmdParser.parse(options, args);
+        } catch (ParseException e) {
+            System.err.println(e.getMessage());
+            ajuda.printHelp("cotuba", options);
+            System.exit(1);
+            return null;
+        }
+        return cmd;
+    }
+
+    private static Options criaOpcoes() {
         var options = new Options();
 
         var opcaoDeDiretorioDosMD = new Option("d", "dir", true,
@@ -34,59 +107,7 @@ class LeitorOpcoesCLI {
         var opcaoModoVerboso = new Option("v", "verbose", false,
                 "Habilita modo verboso.");
         options.addOption(opcaoModoVerboso);
-
-        CommandLineParser cmdParser = new DefaultParser();
-        var ajuda = new HelpFormatter();
-        CommandLine cmd;
-
-        try {
-            cmd = cmdParser.parse(options, args);
-        } catch (ParseException e) {
-            System.err.println(e.getMessage());
-            ajuda.printHelp("cotuba", options);
-            System.exit(1);
-            return;
-        }
-
-        try {
-            String nomeDoDiretorioDosMD = cmd.getOptionValue("dir");
-
-            if (nomeDoDiretorioDosMD != null) {
-                diretorioDosMD = Paths.get(nomeDoDiretorioDosMD);
-                if (!Files.isDirectory(diretorioDosMD)) {
-                    throw new IllegalArgumentException(nomeDoDiretorioDosMD + " não é um diretório.");
-                }
-            } else {
-                Path diretorioAtual = Paths.get("");
-                diretorioDosMD = diretorioAtual;
-            }
-
-            String nomeDoFormatoDoEbook = cmd.getOptionValue("format");
-
-            if (nomeDoFormatoDoEbook != null) {
-                formato = nomeDoFormatoDoEbook.toLowerCase();
-            } else {
-                formato = "pdf";
-            }
-
-            String nomeDoArquivoDeSaidaDoEbook = cmd.getOptionValue("output");
-            if (nomeDoArquivoDeSaidaDoEbook != null) {
-                arquivoDeSaida = Paths.get(nomeDoArquivoDeSaidaDoEbook);
-            } else {
-                arquivoDeSaida = Paths.get("book." + formato.toLowerCase());
-            }
-            if (Files.isDirectory(arquivoDeSaida)) {
-                // deleta arquivos do diretório recursivamente
-                Files.walk(arquivoDeSaida).sorted(Comparator.reverseOrder())
-                        .map(Path::toFile).forEach(File::delete);
-            } else {
-                Files.deleteIfExists(arquivoDeSaida);
-            }
-
-            modoVerboso = cmd.hasOption("verbose");
-        } catch (IOException ex) {
-            throw new IllegalArgumentException(ex);
-        }
+        return options;
     }
 
     public Path getDiretorioDosMD() {
