@@ -9,14 +9,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
 
-public class LeitorOpcoesCLI {
+class LeitorOpcoesCLI {
 
     private Path diretorioDosMD;
     private String formato;
     private Path arquivoDeSaida;
     private boolean modoVerboso = false;
 
-    public LeitorOpcoesCLI(String[] args) {
+    LeitorOpcoesCLI(String[] args) {
         var options = new Options();
 
         var opcaoDeDiretorioDosMD = new Option("d", "dir", true,
