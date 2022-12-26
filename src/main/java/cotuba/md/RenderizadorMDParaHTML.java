@@ -21,52 +21,64 @@ import java.util.stream.Stream;
 public class RenderizadorMDParaHTML {
 
     public List<Capitulo> renderiza(Path diretorioDosMD) {
-        List<Capitulo> capitulos = new ArrayList<>();
+        return obtemArquivosMD(diretorioDosMD)
+                .stream()
+                .map(arquivoMD -> {
+                    var capitulo = new Capitulo();
+                    Node document = parseDoMD(arquivoMD, capitulo);
+                    renderizaParaHTML(arquivoMD, capitulo, document);
+                    return capitulo;
+                })
+                .toList();
+    }
+
+    private static void renderizaParaHTML(Path arquivoMD, Capitulo capitulo, Node document) {
+        try {
+            HtmlRenderer renderer = HtmlRenderer.builder().build();
+            String html = renderer.render(document);
+            capitulo.setConteudoHTML(html);
+        } catch (Exception ex) {
+            throw new IllegalStateException("Erro ao renderizar para HTML o arquivo " + arquivoMD, ex);
+        }
+    }
+
+    private static Node parseDoMD(Path arquivoMD, Capitulo capitulo) {
+        Parser parser = Parser.builder().build();
+        Node document = null;
+        try {
+            document = parser.parseReader(Files.newBufferedReader(arquivoMD));
+            document.accept(new AbstractVisitor() {
+                @Override
+                public void visit(Heading heading) {
+                    if (heading.getLevel() == 1) {
+                        // capítulo
+                        String tituloDoCapitulo = ((Text) heading.getFirstChild()).getLiteral();
+                        capitulo.setTitulo(tituloDoCapitulo);
+                    } else if (heading.getLevel() == 2) {
+                        // seção
+                    } else if (heading.getLevel() == 3) {
+                        // título
+                    }
+                }
+
+            });
+        } catch (Exception ex) {
+            throw new IllegalStateException("Erro ao fazer parse do arquivo " + arquivoMD, ex);
+        }
+        return document;
+    }
+
+    private List<Path> obtemArquivosMD(Path diretorioDosMD) {
         PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.md");
         try (Stream<Path> arquivosMD = Files.list(diretorioDosMD)) {
-            arquivosMD
+            return arquivosMD
                     .filter(matcher::matches)
                     .sorted()
-                    .forEach(arquivoMD -> {
-                        var capitulo = new Capitulo();
-                        Parser parser = Parser.builder().build();
-                        Node document = null;
-                        try {
-                            document = parser.parseReader(Files.newBufferedReader(arquivoMD));
-                            document.accept(new AbstractVisitor() {
-                                @Override
-                                public void visit(Heading heading) {
-                                    if (heading.getLevel() == 1) {
-                                        // capítulo
-                                        String tituloDoCapitulo = ((Text) heading.getFirstChild()).getLiteral();
-                                        capitulo.setTitulo(tituloDoCapitulo);
-                                    } else if (heading.getLevel() == 2) {
-                                        // seção
-                                    } else if (heading.getLevel() == 3) {
-                                        // título
-                                    }
-                                }
-
-                            });
-                        } catch (Exception ex) {
-                            throw new IllegalStateException("Erro ao fazer parse do arquivo " + arquivoMD, ex);
-                        }
-
-                        try {
-                            HtmlRenderer renderer = HtmlRenderer.builder().build();
-                            String html = renderer.render(document);
-
-                             capitulo.setConteudoHTML(html);
-                             capitulos.add(capitulo);
-
-                        } catch (Exception ex) {
-                            throw new IllegalStateException("Erro ao renderizar para HTML o arquivo " + arquivoMD, ex);
-                        }
-                    });
+                    .toList();
         } catch (IOException ex) {
             throw new IllegalStateException("Erro tentando encontrar arquivos .md em " + diretorioDosMD.toAbsolutePath(), ex);
         }
 
-        return capitulos;
+
     }
 }
