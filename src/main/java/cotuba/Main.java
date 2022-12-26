@@ -1,7 +1,6 @@
 package cotuba;
 
 import java.nio.file.Path;
-import java.util.List;
 
 
 public class Main {
