@@ -8,7 +8,11 @@ import java.util.List;
 
 public class Cotuba {
 
-    public void executa(Path diretorioDosMD,String formato, Path arquivoDeSaida ) {
+    public void executa(ParametrosCotuba parametros) {
+        Path diretorioDosMD = parametros.getDiretorioDosMD();
+        String formato = parametros.getFormato();
+        Path arquivoDeSaida = parametros.getArquivoDeSaida();
+
         RenderizadorMDParaHTML renderizadorMDParaHTML = RenderizadorMDParaHTML.cria();
         List<Capitulo> capitulos = renderizadorMDParaHTML.renderiza(diretorioDosMD);
         var ebook = new Ebook();
