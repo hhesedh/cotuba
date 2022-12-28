@@ -5,6 +5,6 @@ import cotuba.domain.Ebook;
 public interface GeradorPDF {
     void gera(Ebook ebook);
     static GeradorPDF cria() {
-        return new GeradorPDFImpl();
+        return new GeradorPDFComIText();
     }
 }
