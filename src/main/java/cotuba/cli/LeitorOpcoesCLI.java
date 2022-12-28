@@ -108,15 +108,15 @@ class LeitorOpcoesCLI implements ParametrosCotuba {
     private void trataModoVerboso(CommandLine cmd) {
         modoVerboso = cmd.hasOption("verbose");
     }
-    @Override
+
     public Path getDiretorioDosMD() {
         return diretorioDosMD;
     }
-    @Override
+
     public String getFormato() {
         return formato;
     }
-    @Override
+
     public Path getArquivoDeSaida() {
         return arquivoDeSaida;
     }

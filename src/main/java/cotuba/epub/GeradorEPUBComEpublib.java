@@ -12,25 +12,33 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-
-public class GeradorEPUBIComEpublib implements GeradorEPUB {
+public class GeradorEPUBComEpublib implements GeradorEPUB {
 
     @Override
     public void gera(Ebook ebook) {
+
         Path arquivoDeSaida = ebook.getArquivoDeSaida();
+
         var epub = new Book();
-        var epubWriter = new EpubWriter();
 
         for (Capitulo capitulo : ebook.getCapitulos()) {
-            String titulo = capitulo.getTitulo();
+
             String html = capitulo.getConteudoHTML();
-            epub.addSection(titulo, new Resource(html.getBytes(), MediatypeService.XHTML));
+
+            String tituloDoCapitulo = capitulo.getTitulo();
+            epub.addSection(tituloDoCapitulo,
+                    new Resource(html.getBytes(), MediatypeService.XHTML));
+
         }
+
+        var epubWriter = new EpubWriter();
 
         try {
             epubWriter.write(epub, Files.newOutputStream(arquivoDeSaida));
         } catch (IOException ex) {
             throw new IllegalStateException("Erro ao criar arquivo EPUB: " + arquivoDeSaida.toAbsolutePath(), ex);
         }
+
     }
+
 }

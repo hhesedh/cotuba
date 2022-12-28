@@ -1,7 +1,9 @@
 package cotuba.domain;
 
 public class Capitulo {
+
     private String titulo;
+
     private String conteudoHTML;
 
     public String getTitulo() {
@@ -19,4 +21,5 @@ public class Capitulo {
     public void setConteudoHTML(String conteudoHTML) {
         this.conteudoHTML = conteudoHTML;
     }
+
 }
