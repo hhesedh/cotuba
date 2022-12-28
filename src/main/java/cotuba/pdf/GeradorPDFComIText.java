@@ -8,6 +8,7 @@ import com.itextpdf.layout.element.AreaBreak;
 import com.itextpdf.layout.element.IBlockElement;
 import com.itextpdf.layout.element.IElement;
 import com.itextpdf.layout.property.AreaBreakType;
+import cotuba.application.GeradorPDF;
 import cotuba.domain.Capitulo;
 import cotuba.domain.Ebook;
 
@@ -34,10 +35,6 @@ public class GeradorPDFComIText implements GeradorPDF {
                 // TODO: não adicionar página depois do último capítulo
                 pdfDocument.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
             }
-
-
-
-
         } catch (Exception ex) {
             throw new IllegalStateException("Erro ao criar arquivo PDF: " + arquivoDeSaida.toAbsolutePath(), ex);
         }
